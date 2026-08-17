@@ -30,7 +30,7 @@ void saveToFile(const std::string& filepathstring, const json& data){
     filesaved.close();
 }
 
-void importer(const std::filesystem::path& xmlfilepath, const std::filesystem::path& rawfilesdirpath){
+void importer(const std::string& xmlfilepath, const std::filesystem::path& rawfilesdirpath){
     auto ids = animeids(xmlfilepath);
     int count = 0;
     MalClient mal;

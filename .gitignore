@@ -2,5 +2,6 @@ raw/
 config/
 .vscode/
 src/Test/
+docs/
 *.out
 *.xml

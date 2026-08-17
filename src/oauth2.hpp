@@ -7,35 +7,15 @@
 #include "pkce.hpp"
 #include "http_client.hpp"
 #include "parameterbuilder.hpp"
-#include "token_manager.hpp"
+#include "oauth_config.hpp"
 #include "json.hpp"
 
 using json = nlohmann::json;
 
+
+
 class OAuth2Client{
 public:
-    enum class PKCEMethod
-    {
-        Plain,
-        SHA256
-    };
-
-    struct OAuthConfig
-    {
-        std::string baseURL;
-        std::string authorizationEndpoint;
-        std::string tokenEndpoint;
-        std::string clientID;
-        std::string clientIDfilepath;
-        std::string clientSecret;
-        std::string redirectURI;
-        std::string scope;
-        
-        bool state = false;
-        bool usePKCE = true;
-        PKCEMethod codeChallengeMethod = PKCEMethod::Plain;
-    };
-
     OAuth2Client(const OAuthConfig& oauthConfig) 
         : config(oauthConfig)      
     {

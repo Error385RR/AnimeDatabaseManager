@@ -10,6 +10,7 @@
 #include "token_manager.hpp"
 #include "http_client.hpp"
 #include "json.hpp"
+#include "oauth_config.hpp"
 
 using json = nlohmann::json;
 
@@ -20,21 +21,10 @@ private:
     std::filesystem::path jsonFilepath = "./config/Maltoken.json";
     OAuth2Client maloauth;
     TokenManager tokenManager;
-    OAuth2Client::OAuthConfig config = createOAuthConfig();
 
-public:
-
-    MalClient()
-        : maloauth(createOAuthConfig()),
-          tokenManager("./config/Maltoken.json")
+    static OAuthConfig createOAuthConfig()
     {
-    }
-
-private:
-
-    static OAuth2Client::OAuthConfig createOAuthConfig()
-    {
-        OAuth2Client::OAuthConfig config;
+        OAuthConfig config;
 
         config.authorizationEndpoint =
             "https://myanimelist.net/v1/oauth2/authorize";
@@ -45,17 +35,24 @@ private:
         config.usePKCE = true;
 
         config.codeChallengeMethod =
-            OAuth2Client::PKCEMethod::Plain;
+            PKCEMethod::Plain;
 
         config.redirectURI =
             "http://localhost:8080/callback";
 
-        config.clientIDfilepath = "./config/Malclient.txt";
+        config.clientIDfilepath = "D:/Dev/Projects/cli_dbexp/config/Malclient.txt";
         
         return config;
     }
-    
+    OAuthConfig config = createOAuthConfig();
+
+
 public:
+    MalClient()
+        : maloauth(createOAuthConfig()),
+          tokenManager("./config/Maltoken.json")
+    {
+    }
     TokenManager::OAuthToken getTokenData(){
         TokenManager::OAuthToken token;
         json jsonTokenData;

@@ -1,0 +1,6 @@
+raw/
+config/
+.vscode/
+src/Test/
+*.out
+*.xml

@@ -1,59 +1,41 @@
-#pragma once
-
 #include <string>
 #include <vector>
 #include <fstream>
 #include <iostream>
 #include <filesystem>
 #include <chrono>
-#include "oauth2.hpp"
-#include "token_manager.hpp"
-#include "http_client.hpp"
-#include "json.hpp"
-#include "oauth_config.hpp"
 
-using json = nlohmann::json;
+#include "mal_api.hpp"
 
-class MalClient
-{
-private:
-    httphandler malhttphandler;
-    std::filesystem::path jsonFilepath = "D:/Dev/Projects/cli_dbexp/config/Maltoken.json";
-    OAuth2Client maloauth;
-    TokenManager tokenManager;
-
-    static OAuthConfig createOAuthConfig()
-    {
-        OAuthConfig config;
-
-        config.authorizationEndpoint =
-            "https://myanimelist.net/v1/oauth2/authorize";
-
-        config.tokenEndpoint =
-            "https://myanimelist.net/v1/oauth2/token";
-
-        config.usePKCE = true;
-
-        config.codeChallengeMethod =
-            PKCEMethod::Plain;
-
-        config.redirectURI =
-            "http://localhost:8080/callback";
-
-        config.clientIDfilepath = "D:/Dev/Projects/cli_dbexp/config/Malclient.txt";
-        
-        return config;
-    }
-    OAuthConfig config = createOAuthConfig();
-
-
-public:
-    MalClient()
+MalClient::MalClient()
         : maloauth(createOAuthConfig()),
           tokenManager(jsonFilepath)
     {
     }
-    TokenManager::OAuthToken getTokenData(){
+    
+OAuthConfig MalClient::createOAuthConfig()
+{
+    OAuthConfig config;
+
+    config.authorizationEndpoint =
+        "https://myanimelist.net/v1/oauth2/authorize";
+
+    config.tokenEndpoint =
+        "https://myanimelist.net/v1/oauth2/token";
+
+    config.usePKCE = true;
+
+    config.codeChallengeMethod =
+        PKCEMethod::Plain;
+
+    config.redirectURI =
+        "http://localhost:8080/callback";
+
+    config.clientIDfilepath = "D:/Dev/Projects/cli_dbexp/config/Malclient.txt";
+    
+    return config;
+}
+TokenManager::OAuthToken MalClient::getTokenData(){
         TokenManager::OAuthToken token;
         json jsonTokenData;
         try
@@ -87,7 +69,7 @@ public:
     }
 
 
-    json getAnimebyId(int id)
+    json MalClient::getAnimebyId(int id)
     {
             std::string baseURL ="https://api.myanimelist.net/v2/anime/" + std::to_string(id);
             genericParameterBuilder url(baseURL);
@@ -114,7 +96,7 @@ public:
             return animeJson;
     }
 
-    json getUserAnimeList(){
+    json MalClient::getUserAnimeList(){
         std::string baseURL ="https://api.myanimelist.net/v2/users/@me/animelist?";
         genericParameterBuilder url(baseURL);
         url.addParam("fields", "list_status");
@@ -142,7 +124,7 @@ public:
     }
 
 
-json getMangabyId(int id)
+json MalClient::getMangabyId(int id)
     {
             std::string baseURL ="https://api.myanimelist.net/v2/manga/" + std::to_string(id);
             genericParameterBuilder url(baseURL);
@@ -170,7 +152,7 @@ json getMangabyId(int id)
     }
 
 
-json getUserAnimeList(const std::string& username)
+json MalClient::getUserAnimeList(const std::string& username)
     {
             std::string baseURL ="https://api.myanimelist.net/v2/users/" + username + "/animelist";
             genericParameterBuilder url(baseURL);
@@ -198,7 +180,7 @@ json getUserAnimeList(const std::string& username)
             return animeJson;
     }
 
-json searchAnime(const std::string& searchquery){
+json MalClient::searchAnime(const std::string& searchquery){
     
     std::string baseurl = "https://api.myanimelist.net/v2/anime";
     genericParameterBuilder url(baseurl);
@@ -222,5 +204,3 @@ json searchAnime(const std::string& searchquery){
         return NULL;
     }
 }
-
-};

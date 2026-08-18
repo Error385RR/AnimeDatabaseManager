@@ -15,7 +15,7 @@ using json = nlohmann::json;
 
 TokenManager::TokenManager(
     const std::filesystem::path& filepath)
-    : tokenFileJsonPath(filepath)
+    : tokenFileJsonPath(filepath) 
 {}
 
 bool TokenManager::isValidToken(const OAuthToken& token){
@@ -80,7 +80,7 @@ TokenManager::OAuthToken TokenManager::refreshToken(const OAuthConfig& config, c
     builder.addParam("client_id", OAuth2Client::getClientID(config.clientIDfilepath));
     auto body = builder.buildFormBody();
 
-    auto response = httphandler::post(config.tokenEndpoint, headers, body);
+    auto response = httphandler.post(config.tokenEndpoint, headers, body);
 
     json jsonTokenData =  json::parse(response.body);
     newtoken.accessToken = jsonTokenData["access_token"];

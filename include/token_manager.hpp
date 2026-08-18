@@ -5,6 +5,7 @@
 #include <chrono>
 #include "json.hpp"
 #include "oauth_config.hpp"
+#include "http_client.hpp"
 
 using json = nlohmann::json;
 class OAuth2Client;
@@ -13,6 +14,7 @@ class TokenManager{
 private:
     
 std::filesystem::path tokenFileJsonPath;
+httphandler httphandler;
 
 public:  
     struct OAuthToken{

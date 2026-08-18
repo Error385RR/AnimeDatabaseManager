@@ -1,23 +1,7 @@
-#pragma once
-
-#include <string>
-#include <vector>
-#include <curl/curl.h>
-#include <stdexcept>
+#include "parameterbuilder.hpp"
 
 
-class genericParameterBuilder{
-private:
-    std::string baseurl;
-    std::vector<std::pair<std::string, std::string>> params; // key value pair of query s
-    
-public:
-    genericParameterBuilder(std::string baseurl)
-        : baseurl(baseurl)
-    {}
-   // ~URLBUILDER(){}; // destructor
-
-    void addParam(const std::string& key, const std::string& value){
+void genericParameterBuilder::addParam(const std::string& key, const std::string& value){
         if (key.empty())
         {
             throw std::invalid_argument("Parameter key cannot be empty");
@@ -28,7 +12,8 @@ public:
     }
      // sets the final URL to the baseURL to be modified and returned
     
-    auto paramterBuilder(){
+
+    std::string genericParameterBuilder::parameterBuilder(){
         std::string paramterString;
         for(const auto& param : params){
             paramterString.append(escapedURL(param.first) + "=" + escapedURL(param.second) + "&");
@@ -37,15 +22,15 @@ public:
         return paramterString; // returns the final URL
     }   
 
-    std::string buildFormBody(){
-        return paramterBuilder(); // returns the final URL
+    std::string genericParameterBuilder::buildFormBody(){
+        return parameterBuilder(); // returns the final URL
     }
 
-    std::string buildQueryString(){
-        return baseurl + "?" + paramterBuilder(); // returns the final URL
+    std::string genericParameterBuilder::buildQueryString(){
+        return baseurl + "?" + parameterBuilder(); // returns the final URL
     }
 
-    bool isSafe(char c)
+    bool genericParameterBuilder::isSafe(char c)
     {
         return (
             (c >= 'A' && c <= 'Z') ||
@@ -59,7 +44,7 @@ public:
     }
 
 
-    std::string escapedURL(const std::string& url){
+    std::string genericParameterBuilder::escapedURL(const std::string& url){
         std::string escapedString;
         const char hex[] = "0123456789ABCDEF";
         for(char c : url){
@@ -80,7 +65,7 @@ public:
         return escapedString;
     }
 
-    std::string printParams()
+    std::string genericParameterBuilder::printParams()
     {
         std::string paramString;
         for(auto& param: params)
@@ -90,5 +75,3 @@ public:
         paramString.pop_back();
         return paramString;
     }
-
-};

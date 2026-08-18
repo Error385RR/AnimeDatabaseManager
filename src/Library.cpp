@@ -1,28 +1,21 @@
-#pragma once
+#include "Library.hpp"
+#include "pugixml.hpp"
 
 #include <iostream>
 #include <algorithm>
 #include <cctype>
-#include "JsonRepository.hpp"
-#include "mal_api.hpp"
-#include "pugixml.hpp"
 
-class Library{
-private:
-    IAnimeRepository& repository;
-    MalClient mal;
-public:
-    explicit Library(IAnimeRepository& repository)
+Library::Library(IAnimeRepository& repository)
         :repository(repository)
     {}
 
-    auto searchAnimelocal(const std::string& name){
+    std::vector<IAnimeRepository::SearchResult> Library::searchAnimelocal(const std::string& name){
         return repository.searchAnimeByName(name);
     }
-    auto getAnimeById(int id){
+    anime::Anime Library::getAnimeById(int id){
         return repository.findById(id);
     }
-    std::vector<IAnimeRepository::SearchResult> searchAnimeProvider(const std::string& name)
+    std::vector<IAnimeRepository::SearchResult> Library::searchAnimeProvider(const std::string& name)
     {
         auto data = mal.searchAnime(name).at("data");
 
@@ -40,19 +33,20 @@ public:
 
         return results;
     }
-    void savelocal(const anime::Anime& anime){
+    
+    void Library::savelocal(const anime::Anime& anime){
         repository.save(anime);
     }
 
-    void removelocal(int id){
+    void Library::removelocal(int id){
         repository.remove(id);
     }
-    void refreshrepo(){
+    void Library::refreshrepo(){
         repository.createIndex();
     }
 
 
-    std::vector<int> animeids(const std::filesystem::path& xmlfilepath){
+    std::vector<int> Library::animeids(const std::filesystem::path& xmlfilepath){
             std::filesystem::path xmlFilePath(xmlfilepath);
             pugi::xml_document doc;
             doc.load_file(xmlFilePath.c_str());
@@ -66,7 +60,7 @@ public:
 
             return ids;
         }
-    void importer(const std::filesystem::path& xmlfilepath, const std::filesystem::path& rawfilesdirpath){
+    void Library::importer(const std::filesystem::path& xmlfilepath, const std::filesystem::path& rawfilesdirpath){
         auto ids = animeids(xmlfilepath);
         int count = 0;
 
@@ -75,9 +69,6 @@ public:
             if(std::filesystem::exists(rawfilesdirpath /  std::filesystem::path(std::to_string(i) + ".json"))){
                 continue;
             }
-            ;
-            auto jsonData = mal.getAnimebyId(i);
-            std::cout << "Processing anime ID: " << i << '\n';
             try {
                 std::cout << "Processing anime ID: " << i << '\n';
 
@@ -85,6 +76,7 @@ public:
                 repository.save(jsonData);
                 std::filesystem::create_directories(rawfilesdirpath / "cache" / std::to_string(i));
                 ++count;
+                std::cout<< count << "- Successfully imported anime ID: " << i << '\n';
             }
             catch (const std::exception& e) {
                 std::cerr
@@ -99,8 +91,3 @@ public:
         }
 
 }
-
-
-};
-
-

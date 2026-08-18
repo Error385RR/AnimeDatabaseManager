@@ -1,22 +1,5 @@
-#pragma once
-
-#include <string>
-#include <vector>
-#include <fstream>
-#include <iostream>
-#include "pkce.hpp"
-#include "http_client.hpp"
-#include "parameterbuilder.hpp"
-#include "oauth_config.hpp"
-#include "json.hpp"
-
-using json = nlohmann::json;
-
-
-
-class OAuth2Client{
-public:
-    OAuth2Client(const OAuthConfig& oauthConfig) 
+#include "oauth2.hpp"
+    OAuth2Client::OAuth2Client(const OAuthConfig& oauthConfig) 
         : config(oauthConfig)      
     {
         if(config.clientID.empty())
@@ -25,7 +8,7 @@ public:
         }
     }
 
-    static std::string getClientID(const std::string& filepath){
+    std::string OAuth2Client::getClientID(const std::string& filepath){
         std::string clientidfromfile;
         std::fstream clientidfile;
         clientidfile.open(filepath, std::ios::in);
@@ -40,15 +23,15 @@ public:
         return clientidfromfile;
     }
 
-    std::string pkceVerifierGenerator(){
+    std::string OAuth2Client::pkceVerifierGenerator(){
         return pkce.generateVerifier();
     }
 
-    std::string pkceCodeChallenge(const std::string& verifier){return pkce.createCodeChallenge(verifier);}
+    std::string OAuth2Client::pkceCodeChallenge(const std::string& verifier){return pkce.createCodeChallenge(verifier);}
 
-    std::string generateState(){return pkce.generateVerifier();}
+    std::string OAuth2Client::generateState(){return pkce.generateVerifier();}
 
-    std::string generateAuthorizationURL(){
+    std::string OAuth2Client::generateAuthorizationURL(){
         genericParameterBuilder builder(config.authorizationEndpoint);
         
         builder.addParam("client_id", config.clientID);
@@ -76,7 +59,7 @@ public:
        return builder.buildQueryString();
     }
 
-    std::string generateTokenBody(){
+    std::string OAuth2Client::generateTokenBody(){
         genericParameterBuilder builder(config.tokenEndpoint);
 
         builder.addParam("client_id", config.clientID);
@@ -88,7 +71,7 @@ public:
         return builder.buildFormBody();
     }
 
-    json exchangeCodeForToken(){
+    json OAuth2Client::exchangeCodeForToken(){
         std::vector<httphandler::HttpHeader> headers{
             {"Content-Type", "application/x-www-form-urlencoded"}
         };
@@ -102,7 +85,7 @@ public:
         return tokenJson;
     }
 
-    json authenticate(){
+    json OAuth2Client::authenticate(){
         std::string authURL = generateAuthorizationURL();
         //temporary
         std::cout <<"Click On The URL and Grant Access In The Browser: "<< authURL <<std::endl;
@@ -113,7 +96,7 @@ public:
         return tokenJson;
     }
 
-    void printConfigStruct(){
+    void OAuth2Client::printConfigStruct(){
         std::cout << config.baseURL<<std::endl;
         std::cout << config.tokenEndpoint <<std::endl;
         std::cout << config.clientID <<std::endl;
@@ -124,15 +107,3 @@ public:
         std::cout << config.state <<std::endl;
         std::cout << static_cast<int>(config.codeChallengeMethod) <<std::endl;
     }
-
-private:
-    httphandler httpHandler;
-    PKCE pkce;
-    
-    std::string verifier;
-    std::string codeChallenge;
-    std::string codeChallengeMethodString;
-    std::string codeForToken;
-   
-    OAuthConfig config;
-};

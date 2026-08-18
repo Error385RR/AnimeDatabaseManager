@@ -1,4 +1,5 @@
 raw/
+build/
 config/
 .vscode/
 src/Test/

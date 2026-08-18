@@ -18,7 +18,7 @@ class MalClient
 {
 private:
     httphandler malhttphandler;
-    std::filesystem::path jsonFilepath = "./config/Maltoken.json";
+    std::filesystem::path jsonFilepath = "D:/Dev/Projects/cli_dbexp/config/Maltoken.json";
     OAuth2Client maloauth;
     TokenManager tokenManager;
 
@@ -50,7 +50,7 @@ private:
 public:
     MalClient()
         : maloauth(createOAuthConfig()),
-          tokenManager("./config/Maltoken.json")
+          tokenManager(jsonFilepath)
     {
     }
     TokenManager::OAuthToken getTokenData(){

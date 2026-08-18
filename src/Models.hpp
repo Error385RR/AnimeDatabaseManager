@@ -127,13 +127,13 @@ namespace anime{
         anime.mediaType = j.at("media_type").get<std::string>();
         anime.startDate = j.at("start_date").get<std::string>();
         anime.endDate = j.at("end_date").get<std::string>();
-        anime.background = j.at("background").get<std::string>();
+        anime.background = j.value("background", std::string{});
         anime.createdAt = j.at("created_at").get<std::string>();
         anime.updatedAt = j.at("updated_at").get<std::string>();
         anime.nsfw = j.at("nsfw").get<std::string>();
         anime.averageEpisodeDurationSec = j.at("average_episode_duration").get<int>();
-        anime.popularity = j.at("popularity").get<int>();
-        anime.mean = j.at("mean").get<double>();
+        anime.popularity = j.value("popularity", 0);
+        anime.mean = j.value("mean", 0.0);
         anime.numEpisodes = j.at("num_episodes").get<int>();
         anime.startSeason = j.at("start_season").get<start_season>();
         anime.studios = j.at("studios").get<std::vector<Studio>>();

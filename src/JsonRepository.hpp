@@ -87,7 +87,7 @@ public:
     void remove(int id)override{
         if(animeExists(id)){
             std::filesystem::remove(directoryPath / std::string(std::to_string(id) + ".json"));
-            createIndexJson();
+            createIndex();
         }else{
             throw std::runtime_error("The Entry Does Not Exist");
         }
@@ -101,13 +101,13 @@ public:
             json data = animest;
             file<<data.dump(3);
             file.close();
-            createIndexJson();
+            createIndex();
         }else{
             throw std::runtime_error("The Entry Already Exists");
         }
     }
 
-    std::vector<anime::Anime> getAll()override{
+    std::vector<anime::Anime> getAll(){
         std::filesystem::directory_iterator dirit;
         try{
             dirit = std::filesystem::directory_iterator(directoryPath);
@@ -138,7 +138,7 @@ public:
         return allAnime;
     }
 
-    void createIndexJson(){
+    void createIndex() override{
         auto allAnime = getAll();
         std::ofstream file(directoryPath.parent_path() / "animeIndex.json");
         if(!file.is_open()){
@@ -172,7 +172,7 @@ public:
         std::ifstream file(directoryPath.parent_path() / "animeIndex.json");
         if(!std::filesystem::exists(directoryPath.parent_path() / "animeIndex.json")){
             file.clear();
-            createIndexJson();
+            createIndex();
             file.open(directoryPath.parent_path() / "animeIndex.json");
         }
         if(!file.is_open()) throw std::runtime_error("Could not open anime index at: " + (directoryPath.parent_path() / "animeIndex.json").string());
@@ -187,14 +187,14 @@ public:
         file.close();
         return indexJson;
     }
-    std::vector<std::pair<std::string, int>> searchAnimeByName(const std::string& query) override{
+    std::vector<SearchResult> searchAnimeByName(const std::string& query) override{
         std::string normalizedQuery = stringNormalizer(query);
         json indexjson = loadIndexJson();
-        std::vector<std::pair<std::string, int>> results;
+        std::vector<SearchResult> results;
         
         for (const auto& entry : indexjson)
         {
-            std::pair<std::string, int> entrypair;
+            SearchResult entrystruct;
             // Required fields — malformed index if missing
             if (!entry.contains("mal_id") ||
                 !entry.contains("title") ||
@@ -204,11 +204,9 @@ public:
             }
             if (entry["normalized_title"].get<std::string>().find(normalizedQuery) != std::string::npos)
             {
-                entrypair = {
-                    entry["title"].get<std::string>(),
-                    entry["mal_id"].get<int>()
-                };
-                results.push_back(entrypair);
+                entrystruct.title = entry["title"].get<std::string>();
+                entrystruct.id = entry["mal_id"].get<int>();
+                results.push_back(entrystruct);
             }else if (entry.contains("alt_titles"))
             {
                 const auto& altTitles = entry["alt_titles"];
@@ -216,12 +214,9 @@ public:
                 if (altTitles.contains("en") &&
                     altTitles["en"].get<std::string>().find(normalizedQuery) != std::string::npos)
                 {
-                    entrypair = {
-                        entry["title"].get<std::string>(),
-                        entry["mal_id"].get<int>()
-                    };
-
-                    results.push_back(entrypair);
+                    entrystruct.title = entry["title"].get<std::string>();
+                    entrystruct.id = entry["mal_id"].get<int>();
+                    results.push_back(entrystruct);
                 }
                 else if (altTitles.contains("synonyms") &&
                         altTitles["synonyms"].is_array())
@@ -230,13 +225,10 @@ public:
                     {
                         if (synonym.is_string() &&
                             synonym.get<std::string>().find(normalizedQuery) != std::string::npos)
-                        {
-                            entrypair = {
-                                synonym.get<std::string>(),
-                                entry["mal_id"].get<int>()
-                            };
-
-                            results.push_back(entrypair);
+                        { 
+                            entrystruct.title = entry["title"].get<std::string>();
+                            entrystruct.id = entry["mal_id"].get<int>();
+                            results.push_back(entrystruct);
                             break;
                         }
                     }

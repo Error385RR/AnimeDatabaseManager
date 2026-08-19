@@ -7,13 +7,15 @@
 
 #include "mal_api.hpp"
 
-MalClient::MalClient()
-        : maloauth(createOAuthConfig()),
-          tokenManager(jsonFilepath)
-    {
-    }
+MalClient::MalClient(const Config::configdata& cfg)
+    : jsonFilepath(cfg.MALTOKENFilePath),
+      config(createOAuthConfig(cfg)),
+      maloauth(config),
+      tokenManager(cfg.MALTOKENFilePath)
+
+    {}
     
-OAuthConfig MalClient::createOAuthConfig()
+OAuthConfig MalClient::createOAuthConfig(const Config::configdata& cfg)
 {
     OAuthConfig config;
 
@@ -31,7 +33,7 @@ OAuthConfig MalClient::createOAuthConfig()
     config.redirectURI =
         "http://localhost:8080/callback";
 
-    config.clientIDfilepath = "D:/Dev/Projects/cli_dbexp/config/Malclient.txt";
+    config.clientIDfilepath = cfg.clientidfilepath.string();
     
     return config;
 }
@@ -55,7 +57,7 @@ TokenManager::OAuthToken MalClient::getTokenData(){
                         jsonTokenData["expires_in"].get<int>()
                     );
                 token.isValid = true;
-                tokenManager.saveToken(token, jsonFilepath);
+                tokenManager.saveToken(token);
             }
             
         }

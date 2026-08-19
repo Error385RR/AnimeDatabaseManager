@@ -27,7 +27,7 @@ public:
     std::string generateAuthorizationURL();
 
     std::string generateTokenBody();
-    json exchangeCodeForToken();
+    json exchangeCodeForToken(const std::vector<httphandler::HttpHeader>& headers = {});
 
     json authenticate();
 

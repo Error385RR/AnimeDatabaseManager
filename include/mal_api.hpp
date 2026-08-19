@@ -6,23 +6,25 @@
 #include "http_client.hpp"
 #include "json.hpp"
 #include "oauth_config.hpp"
+#include "config.hpp"
 
 using json = nlohmann::json;
 
 class MalClient
 {
 private:
-    httphandler malhttphandler;
-    std::filesystem::path jsonFilepath = "D:/Dev/Projects/cli_dbexp/config/Maltoken.json";
+   httphandler malhttphandler;
+    std::filesystem::path jsonFilepath;
+    OAuthConfig config;
     OAuth2Client maloauth;
     TokenManager tokenManager;
 
-    static OAuthConfig createOAuthConfig();
-    OAuthConfig config = createOAuthConfig();
-
+    static OAuthConfig createOAuthConfig(
+        const Config::configdata& cfg
+    );
 
 public:
-    MalClient();
+    MalClient(const Config::configdata& cfg);
     TokenManager::OAuthToken getTokenData();
 
 

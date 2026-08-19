@@ -5,6 +5,7 @@
 #include <limits>
 #include <optional>
 #include <algorithm>
+#include "config.hpp"
 #include "Library.hpp"
 
 enum class MenuOption
@@ -34,7 +35,7 @@ void clearInputBuffer()
 void waitforexit()
 {
     clearInputBuffer();
-    std::cout << "Press Enter to return to the main menu...";
+    std::cout << "Press Any Key to return to the main menu...";
     std::cin.get();
 }
 
@@ -54,12 +55,72 @@ void SearchAnime(Library& app)
     {
         searchResultsMenuItems.push_back(std::to_string(count++) + ". Title: " + i.title + ", ID: " + std::to_string(i.id));
     }
+    if(searchResultsMenuItems.empty())
+    {
+        std::cout << "No results found for: " << query << std::endl;
+        std::cout<<"would you like to search online? y/N"<<std::endl;
+        std::string choice;
+        std::getline(std::cin, choice);
+        if(choice == "y" || choice == "Y")
+        {
+            result = app.searchAnimeProvider(query);
+            searchResultsMenuItems.clear();
+            count = 1;
+            for (const auto& i : result)
+            {
+                searchResultsMenuItems.push_back(std::to_string(count++) + ". Title: " + i.title + ", ID: " + std::to_string(i.id));
+            }
+            displayMenu("Search Results", searchResultsMenuItems);
+            std::cout << "Select the anime to add by entering the corresponding number: ";
+            int selectedOption;
+            std::cin >> selectedOption; // Convert to zero-based index
+            if(selectedOption < 1 || selectedOption > static_cast<int>(result.size()))
+            {
+                std::cout << "Invalid selection. Returning to main menu." << std::endl;
+                return;
+            }
+            anime::Anime animeData = app.getAnimeByIdProvider(result[selectedOption - 1].id);
+            json jsonData = animeData;
+            std::vector<std::string> animeDetailsMenuItems = {
+                "ID: " + std::to_string(animeData.mal_id),
+                "Title: " + animeData.title,
+                "Synopsis: " + animeData.synopsis,
+                "Start Season: " + animeData.startSeason.season,
+                "Start Year: " + std::to_string(animeData.startSeason.year),
+                "Status: " + animeData.status,
+                "Media Type: " + animeData.mediaType
+            };
+            displayMenu("Anime Details", animeDetailsMenuItems);
+            std::cout<< "Would you like to add this anime to your local database? (y/N): ";
+            std::string addChoice;
+            std::cin >> addChoice;
+            if(addChoice == "y" || addChoice == "Y")
+            {
+                app.savelocal(animeData);
+                std::cout << "Anime added to local database." << std::endl;
+            }
+            else
+            {
+                std::cout << "Anime not added to local database." << std::endl;
+            }
+            return;
+        }
+        else
+        {
+            std::cout << "Returning to main menu." << std::endl;
+            return;
+        }
+    }
     displayMenu("Search Results", searchResultsMenuItems);
     std::cout << "Select the anime to add by entering the corresponding number: ";
-    char selectedOption;
-    std::cin.get(selectedOption);
-    int selectedIndex = selectedOption - '1'; // Convert char to index
-    anime::Anime animeData = app.getAnimeById(result[selectedIndex].id);
+    int selectedOption;
+    std::cin >> selectedOption; // Convert to zero-based index
+    if(selectedOption < 1 || selectedOption > static_cast<int>(result.size()))
+    {
+        std::cout << "Invalid selection. Returning to main menu." << std::endl;
+        return;
+    }
+    anime::Anime animeData = app.getAnimeById(result[selectedOption - 1].id);
     json jsonData = animeData;
     std::vector<std::string> animeDetailsMenuItems = {
         "ID: " + std::to_string(animeData.mal_id),
@@ -93,17 +154,56 @@ void addAnime(Library& app)
     }
     displayMenu("Add Anime", addAnimeMenuItems);
     std::cout << "Select the anime to add by entering the corresponding number: ";
-    char selectedOption;
-    std::cin.get(selectedOption);
-    int selectedIndex = selectedOption - '1'; // Convert char to index
-    anime::Anime animeData = app.getAnimeByIdProvider(result[selectedIndex].id);
+    int selectedOption;
+    std::cin >> selectedOption; 
+    if(selectedOption < 1 || selectedOption > static_cast<int>(result.size()))
+    {
+        std::cout << "Invalid selection. Returning to main menu." << std::endl;
+        return;
+    }
+    anime::Anime animeData = app.getAnimeByIdProvider(result[selectedOption - 1].id);
     json jsonData = animeData;
     app.savelocal(animeData);
 
 }
+void deleteAnime(Library& app)
+{
+    std::cout << "\033[2J\033[1;1H";
+    clearInputBuffer();
+    std::string title;
+    std::cout << "Enter the title of the anime to delete: ";
+    std::getline(std::cin, title);
+    // Implement the logic to delete anime here
+    auto result = app.searchAnimelocal(title);
+    std::vector<std::string> deleteAnimeMenuItems;
+    int count = 1;
+    for (const auto& i : result)
+    {
+        deleteAnimeMenuItems.push_back(std::to_string(count++) + ". Title: " + i.title + ", ID: " + std::to_string(i.id));
+    }
+    displayMenu("Delete Anime", deleteAnimeMenuItems);
+    std::cout << "Select the anime to delete by entering the corresponding number: ";
+    int selectedOption;
+    std::cin >> selectedOption; 
+    if(selectedOption < 1 || selectedOption > static_cast<int>(result.size()))
+    {
+        std::cout << "Invalid selection. Returning to main menu." << std::endl;
+        return;
+    }
+    app.removelocal(result[selectedOption - 1].id);
+}
+
+
 int main()
 {   
-    JsonRepository jsonRepo(std::filesystem::path("D:/Dev/Projects/cli_dbexp/raw/anime"));
+    Config configManager;
+    Config::configdata cfg = configManager.loadConfig();
+    std::cout<<cfg.clientidfilepath<<std::endl;
+    std::cout<<cfg.MALTOKENFilePath<<std::endl;
+    std::cout<<cfg.jsonFilePath<<std::endl;
+    std::cout<<cfg.jsonrepositorypath<<std::endl;
+    
+    JsonRepository jsonRepo(std::filesystem::path(cfg.jsonrepositorypath));
     Library app(jsonRepo);
     char menuSelection;
     std::vector<std::string> mainmenuitems = {
@@ -132,6 +232,9 @@ int main()
             break;
         case '3':
             menuSelection = '3';
+            deleteAnime(app);
+            waitforexit();
+            goto MAINMENU;
             break;
         case '4':
             menuSelection = '4';

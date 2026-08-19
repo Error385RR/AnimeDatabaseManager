@@ -29,7 +29,7 @@ public:
     
     bool isValidToken(const OAuthToken& token);  
     OAuthToken loadTokenfiledata(); 
-    void saveToken(const OAuthToken& token, std::filesystem::path& jsonfilepath);
+    void saveToken(const OAuthToken& token);
     OAuthToken refreshToken(const OAuthConfig& config, const std::string& refreshToken);
     OAuthToken getTokenData(OAuth2Client& maloauth, const OAuthConfig& config);
 

@@ -38,7 +38,10 @@
         builder.addParam("response_type", "code");
         builder.addParam("redirect_uri", config.redirectURI);
         if(!config.scope.empty()){builder.addParam("scope", config.scope);}
-        if(config.state){builder.addParam("state", generateState());}
+        if(config.state){
+            auto state = generateState();
+            builder.addParam("state", state);
+        }
         
         if(config.usePKCE)
         {
@@ -71,17 +74,20 @@
         return builder.buildFormBody();
     }
 
-    json OAuth2Client::exchangeCodeForToken(){
-        std::vector<httphandler::HttpHeader> headers{
-            {"Content-Type", "application/x-www-form-urlencoded"}
-        };
+    json OAuth2Client::exchangeCodeForToken(const std::vector<httphandler::HttpHeader>& headers){
+        std::vector<httphandler::HttpHeader> requestHeaders = headers;
+
+        requestHeaders.push_back(
+            {"Content-Type","application/x-www-form-urlencoded"}
+        );
         std::string tokenBody = generateTokenBody();
-        httphandler::HttpResponse tokenGeneratedstruct = httpHandler.exchangeToken(tokenBody,config.tokenEndpoint, headers);
+
+        httphandler::HttpResponse tokenGeneratedstruct = httpHandler.exchangeToken(tokenBody,config.tokenEndpoint, requestHeaders);
         
         std::string tokenGenerated = tokenGeneratedstruct.body;
-        
-        json tokenJson = json::parse(tokenGenerated);
 
+        json tokenJson = json::parse(tokenGenerated);
+        
         return tokenJson;
     }
 

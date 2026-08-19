@@ -14,7 +14,7 @@ find_package(pugixml CONFIG REQUIRED)
 find_package(OpenSSL 3 REQUIRED)
 
 add_executable(cli_db
-    main.cpp
+    smallcli.cpp
     src/Library.cpp
     src/JsonRepository.cpp
     src/mal_api.cpp
@@ -22,6 +22,7 @@ add_executable(cli_db
     src/token_manager.cpp
     src/http_client.cpp
     src/parameterbuilder.cpp
+    src/config.cpp
 )
 
 target_include_directories(cli_db PRIVATE

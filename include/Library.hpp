@@ -7,7 +7,7 @@
 class Library{
 private:
     IAnimeRepository& repository;
-    MalClient mal;
+    MalClient mal = MalClient(Config::getDefaults());
 public:
     explicit Library(IAnimeRepository& repository);
     std::vector<IAnimeRepository::SearchResult> searchAnimelocal(const std::string& name);

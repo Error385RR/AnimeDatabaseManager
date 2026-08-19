@@ -55,10 +55,10 @@ TokenManager::OAuthToken TokenManager::loadTokenfiledata(){
     return token;
 }
 
-void TokenManager::saveToken(const TokenManager::OAuthToken& token, std::filesystem::path& jsonfilepath){
+void TokenManager::saveToken(const TokenManager::OAuthToken& token){
     std::ofstream tfile;
     json jsonToken;
-    tfile.open(jsonfilepath, std::ios::trunc);
+    tfile.open(tokenFileJsonPath, std::ios::trunc);
     jsonToken["access_token"] = token.accessToken;
     jsonToken["refresh_token"] = token.refreshToken;
     jsonToken["token_type"] = token.tokenType;
@@ -101,7 +101,7 @@ TokenManager::OAuthToken TokenManager::refreshToken(const OAuthConfig& config, c
         );
     newtoken.isValid = true;
 
-    saveToken(newtoken, tokenFileJsonPath);
+    saveToken(newtoken);
     
     return newtoken;
 }
@@ -126,7 +126,7 @@ TokenManager::OAuthToken TokenManager::getTokenData(OAuth2Client& maloauth, cons
                     jsonTokenData["expires_in"].get<int>()
                 );
             token.isValid = true;
-            saveToken(token, tokenFileJsonPath);
+            saveToken(token);
         }
         
     }

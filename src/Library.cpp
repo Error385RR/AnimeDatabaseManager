@@ -15,6 +15,10 @@ Library::Library(IAnimeRepository& repository)
     anime::Anime Library::getAnimeById(int id){
         return repository.findById(id);
     }
+    anime::Anime Library::getAnimeByIdProvider(int id){
+        return mal.getAnimebyId(id); 
+    }
+
     std::vector<IAnimeRepository::SearchResult> Library::searchAnimeProvider(const std::string& name)
     {
         auto data = mal.searchAnime(name).at("data");

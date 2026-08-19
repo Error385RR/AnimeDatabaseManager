@@ -17,7 +17,7 @@ public:
     void savelocal(const anime::Anime& anime);
     void removelocal(int id);
     void refreshrepo();
-
+    anime::Anime getAnimeByIdProvider(int id);
 
     std::vector<int> animeids(const std::filesystem::path& xmlfilepath);
     void importer(const std::filesystem::path& xmlfilepath, const std::filesystem::path& rawfilesdirpath);

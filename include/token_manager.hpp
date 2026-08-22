@@ -14,7 +14,7 @@ class TokenManager{
 private:
     
 std::filesystem::path tokenFileJsonPath;
-httphandler httphandler;
+httphandler httpHandler;
 
 public:  
     struct OAuthToken{

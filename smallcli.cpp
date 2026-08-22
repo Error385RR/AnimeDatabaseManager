@@ -114,7 +114,7 @@ void SearchAnime(Library& app)
     displayMenu("Search Results", searchResultsMenuItems);
     std::cout << "Select the anime to add by entering the corresponding number: ";
     int selectedOption;
-    std::cin >> selectedOption; // Convert to zero-based index
+    std::cin >> selectedOption; 
     if(selectedOption < 1 || selectedOption > static_cast<int>(result.size()))
     {
         std::cout << "Invalid selection. Returning to main menu." << std::endl;

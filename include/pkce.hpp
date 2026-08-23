@@ -7,7 +7,7 @@
 
 class PKCE {
 public:
-    std::string base64url_encode(std::vector<unsigned char>& buffer) {
+    static std::string base64url_encode(const std::vector<unsigned char>& buffer) {
         const char base64table[65] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
         uint64_t accumulator = 0;
         int bit_count = 0;
@@ -32,7 +32,7 @@ public:
         return verifier;
     }
 
-    std::string generateVerifier(){
+    static std::string generateVerifier(){
         std::string verifier;
         std::vector<unsigned char> buffer(32);
     
@@ -40,7 +40,7 @@ public:
         return base64url_encode(buffer); //returns the verifier
     }
 
-    std::string createCodeChallenge(const std::string& verifier){
+    static std::string createCodeChallenge(const std::string& verifier){
         std::vector<unsigned char> hash(SHA256_DIGEST_LENGTH);
         
         SHA256(

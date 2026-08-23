@@ -7,7 +7,7 @@
 
 class JsonRepository: public IAnimeRepository{
 private:
-    std::string stringNormalizer(const std::string& searchQuery);
+    static std::string stringNormalizer(const std::string& searchQuery);
     std::filesystem::path directoryPath;
 
 public:
@@ -18,8 +18,9 @@ public:
     void save(const anime::Anime& animest)override;
     void remove(int id)override;
 
-    std::vector<anime::Anime> getAll();
+    std::vector<anime::Anime> getAll() override;
     void createIndex() override;
+    std::filesystem::path getRepoPath() override;
     json loadIndexJson();
     std::vector<SearchResult> searchAnimeByName(const std::string& query) override;
 };

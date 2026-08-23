@@ -1,4 +1,5 @@
 #include "oauth2.hpp"
+
     OAuth2Client::OAuth2Client(const OAuthConfig& oauthConfig) 
         : config(oauthConfig)      
     {
@@ -23,13 +24,11 @@
         return clientidfromfile;
     }
 
-    std::string OAuth2Client::pkceVerifierGenerator(){
-        return pkce.generateVerifier();
-    }
 
-    std::string OAuth2Client::pkceCodeChallenge(const std::string& verifier){return pkce.createCodeChallenge(verifier);}
 
-    std::string OAuth2Client::generateState(){return pkce.generateVerifier();}
+    // std::string OAuth2Client::pkceCodeChallenge(const std::string& verifier){return PKCE::createCodeChallenge(verifier);}
+
+    std::string OAuth2Client::generateState(){return PKCE::generateVerifier();}
 
     std::string OAuth2Client::generateAuthorizationURL(){
         genericParameterBuilder builder(config.authorizationEndpoint);
@@ -39,24 +38,24 @@
         builder.addParam("redirect_uri", config.redirectURI);
         if(!config.scope.empty()){builder.addParam("scope", config.scope);}
         if(config.state){
-            auto state = generateState();
-            builder.addParam("state", state);
+            flow.state = generateState();
+            builder.addParam("state", flow.state);
         }
         
         if(config.usePKCE)
         {
-            verifier = pkceVerifierGenerator();
+            flow.verifier = PKCE::generateVerifier();
             if (config.codeChallengeMethod == PKCEMethod::SHA256)
             {
-                codeChallenge = pkceCodeChallenge(verifier);
-                codeChallengeMethodString = "S256";
+                flow.codeChallenge = PKCE::createCodeChallenge(flow.verifier);
+                flow.codeChallengeMethodString = "S256";
             }else{
-                codeChallenge = verifier;
-                codeChallengeMethodString = "plain";
+                flow.codeChallenge = flow.verifier;
+                flow.codeChallengeMethodString = "plain";
             }
             
-            builder.addParam("code_challenge", codeChallenge);
-            builder.addParam("code_challenge_method", codeChallengeMethodString);
+            builder.addParam("code_challenge", flow.codeChallenge);
+            builder.addParam("code_challenge_method", flow.codeChallengeMethodString);
         }
 
        return builder.buildQueryString();
@@ -68,8 +67,8 @@
         builder.addParam("client_id", config.clientID);
         builder.addParam("grant_type", "authorization_code");
         builder.addParam("redirect_uri", config.redirectURI);
-        builder.addParam("code", codeForToken);
-        if(config.usePKCE){builder.addParam("code_verifier", verifier);}
+        builder.addParam("code", flow.codeForToken);
+        if(config.usePKCE){builder.addParam("code_verifier", flow.verifier);}
         if(!config.clientSecret.empty()){builder.addParam("client_secret", config.clientSecret);}
         return builder.buildFormBody();
     }
@@ -95,7 +94,7 @@
         std::string authURL = generateAuthorizationURL();
         //temporary
         std::cout <<"Click On The URL and Grant Access In The Browser: "<< authURL <<std::endl;
-        codeForToken = httpHandler.waitForAuthorizationCode();
+        flow.codeForToken = httpHandler.waitForAuthorizationCode();
     
         json tokenJson = exchangeCodeForToken();
 

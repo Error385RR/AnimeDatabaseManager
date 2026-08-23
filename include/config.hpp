@@ -12,7 +12,7 @@ using json = nlohmann::json;
 
 class Config{
 private:
-    std::filesystem::path configPath = "clidb/config/config.json";
+    std::filesystem::path configPath;
 
 public:
 
@@ -23,6 +23,8 @@ public:
         std::filesystem::path jsonFilePath;
         std::filesystem::path jsonrepositorypath;
     };
+
+    Config(const std::filesystem::path& configFilePath);
     configdata defaults = getDefaults();
 
     static configdata getDefaults();

@@ -23,6 +23,19 @@ bool TokenManager::isValidToken(const OAuthToken& token){
     return now + std::chrono::minutes(5) < token.expiresin;
 }
 
+bool TokenManager::isUsableToken(const OAuthToken& token){
+    return
+    !token.accessToken.empty() &&
+    !token.refreshToken.empty() &&
+    !token.tokenType.empty();
+    
+}
+bool TokenManager::canUseAccessToken(const OAuthToken& token)
+{
+    return isUsableToken(token) &&
+           isValidToken(token);
+}
+
 TokenManager::OAuthToken TokenManager::loadTokenfiledata(){
     std::ifstream tfile;
     std::string jsonToken;
@@ -40,10 +53,53 @@ TokenManager::OAuthToken TokenManager::loadTokenfiledata(){
     json jsonTokenData;
     tfile >> jsonTokenData;
 
-    token.accessToken =jsonTokenData["access_token"];
-    token.refreshToken = jsonTokenData["refresh_token"];
-    token.tokenType = jsonTokenData["token_type"];
-    token.expiresin =    std::chrono::system_clock::from_time_t(jsonTokenData["expires_at"].get<std::time_t>());
+    if (!jsonTokenData.contains("access_token") ||
+        !jsonTokenData["access_token"].is_string() ||
+        jsonTokenData["access_token"].get<std::string>().empty())
+    {
+        throw std::runtime_error(
+            "Invalid token file: access_token"
+        );
+    }
+
+    if (!jsonTokenData.contains("refresh_token") ||
+        !jsonTokenData["refresh_token"].is_string() ||
+        jsonTokenData["refresh_token"].get<std::string>().empty())
+    {
+        throw std::runtime_error(
+            "Invalid token file: refresh_token"
+        );
+    }
+
+    if (!jsonTokenData.contains("token_type") ||
+        !jsonTokenData["token_type"].is_string() ||
+        jsonTokenData["token_type"].get<std::string>().empty())
+    {
+        throw std::runtime_error(
+            "Invalid token file: token_type"
+        );
+    }
+
+    if (!jsonTokenData.contains("expires_at") ||
+        !jsonTokenData["expires_at"].is_number_integer())
+    {
+        throw std::runtime_error(
+            "Invalid token file: expires_at"
+        );
+    }
+    token.accessToken =
+        jsonTokenData["access_token"].get<std::string>();
+
+    token.refreshToken =
+        jsonTokenData["refresh_token"].get<std::string>();
+
+    token.tokenType =
+        jsonTokenData["token_type"].get<std::string>();
+
+    token.expiresin =
+        std::chrono::system_clock::from_time_t(
+            jsonTokenData["expires_at"].get<std::time_t>()
+        );
     tfile.close();
 
     token.isValid = TokenManager::isValidToken(token);
@@ -53,12 +109,19 @@ TokenManager::OAuthToken TokenManager::loadTokenfiledata(){
     }
     
     return token;
+
 }
 
 void TokenManager::saveToken(const TokenManager::OAuthToken& token){
     std::ofstream tfile;
     json jsonToken;
     tfile.open(tokenFileJsonPath, std::ios::trunc);
+    if (!tfile)
+    {
+        throw std::runtime_error(
+            "Failed to open token file for writing"
+        );
+    }
     jsonToken["access_token"] = token.accessToken;
     jsonToken["refresh_token"] = token.refreshToken;
     jsonToken["token_type"] = token.tokenType;

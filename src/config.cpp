@@ -1,5 +1,10 @@
 #include "config.hpp"
 
+Config::Config(const std::filesystem::path& configFilePath)
+    : configPath(configFilePath)
+{}
+
+
 Config::configdata Config::getDefaults()
     {
         return {

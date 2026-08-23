@@ -29,7 +29,7 @@ public:
     httphandler();
     
 
-    HttpResponse get(const std::string& url, std::vector<HttpHeader>& headers);
+    HttpResponse get(const std::string& url,const std::vector<HttpHeader>& headers);
 
     HttpResponse post(const std::string& url, const std::vector<HttpHeader>& headers, const std::string& body);
     

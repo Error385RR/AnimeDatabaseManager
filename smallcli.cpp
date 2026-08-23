@@ -193,6 +193,20 @@ void deleteAnime(Library& app)
     app.removelocal(result[selectedOption - 1].id);
 }
 
+void importFromXML(Library& app){
+    std::string xmlfilepathstring;
+    clearInputBuffer();
+    std::cout<<"Enter the XML File Path: ";
+    std::getline(std::cin, xmlfilepathstring);
+
+    std::filesystem::path xmlfile(xmlfilepathstring);
+    if(!std::filesystem::exists(xmlfile)){
+        displayMenu("Import Anime", {"Could Not Open The XML file, please check if the file is valid or exists"});
+        return;
+    }
+
+    app.importer(xmlfile);
+}
 
 int main()
 {   
@@ -210,7 +224,8 @@ int main()
         "1. Add Anime",
         "2. Search Anime",
         "3. Delete Anime",
-        "4. Initialize Database",
+        "4. Import",
+        // "5. Initialize Database",
         "5. Exit"
     };
     MAINMENU:
@@ -238,6 +253,8 @@ int main()
             break;
         case '4':
             menuSelection = '4';
+            importFromXML(app);
+            goto MAINMENU;
             break;
         case '5':
             std::cout << "Exiting the application.\n";

@@ -7,14 +7,14 @@
 #include "json.hpp"
 #include "oauth_config.hpp"
 #include "config.hpp"
-
+#include "IAnimeProvider.hpp"
 using json = nlohmann::json;
 
-class MalClient
+class MalProvider : public IAnimeProvider
 {
 private:
-   httphandler malhttphandler;
-    std::filesystem::path jsonFilepath;
+    httphandler malhttphandler;
+    // std::filesystem::path jsonFilepath;
     OAuthConfig config;
     OAuth2Client maloauth;
     TokenManager tokenManager;
@@ -24,11 +24,11 @@ private:
     );
 
 public:
-    MalClient(const Config::configdata& cfg);
+    MalProvider(const Config::configdata& cfg);
     TokenManager::OAuthToken getTokenData();
 
 
-    json getAnimebyId(int id);
+    anime::Anime getAnimeById(int id) override;
 
     json getUserAnimeList();
 
@@ -36,6 +36,7 @@ public:
 
     json getUserAnimeList(const std::string& username);
 
-    json searchAnime(const std::string& searchquery);
-
+    SearchPage searchAnimeByName(const std::string& searchquery) override;
+    SearchPage getSearchPage(const std::string& nextPageURL) override;
+    SearchPage parseSearchResponse(const std::string& body);
 };

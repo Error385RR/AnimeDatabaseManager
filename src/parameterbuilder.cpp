@@ -13,24 +13,24 @@ void genericParameterBuilder::addParam(const std::string& key, const std::string
      // sets the final URL to the baseURL to be modified and returned
     
 
-    std::string genericParameterBuilder::parameterBuilder(){
+    std::string genericParameterBuilder::parameterBuilder(const EncodingType& type){
         std::string paramterString;
         for(const auto& param : params){
-            paramterString.append(escapedURL(param.first) + "=" + escapedURL(param.second) + "&");
+            paramterString.append(encode(param.first, type) + "=" + encode(param.second, type) + "&");
         }
         if (!paramterString.empty()){paramterString.pop_back();}
         return paramterString; // returns the final URL
     }   
 
     std::string genericParameterBuilder::buildFormBody(){
-        return parameterBuilder(); // returns the final URL
+        return parameterBuilder(EncodingType::Form); // returns the final URL
     }
 
     std::string genericParameterBuilder::buildQueryString(){
-        return baseurl + "?" + parameterBuilder(); // returns the final URL
+        return baseurl + "?" + parameterBuilder(EncodingType::RFC3986); // returns the final URL
     }
 
-    bool genericParameterBuilder::isSafe(char c)
+    bool genericParameterBuilder::isSafeForrfc3986(char c)
     {
         return (
             (c >= 'A' && c <= 'Z') ||
@@ -43,12 +43,15 @@ void genericParameterBuilder::addParam(const std::string& key, const std::string
         );
     }
 
+    
 
-    std::string genericParameterBuilder::escapedURL(const std::string& url){
+
+
+    std::string genericParameterBuilder::rfc3986encoding(const std::string& url){
         std::string escapedString;
         const char hex[] = "0123456789ABCDEF";
         for(char c : url){
-            if(!isSafe(c)){
+            if(!isSafeForrfc3986(c)){
                 unsigned char byte = static_cast<unsigned char>(c);
                 int high = byte / 16;
                 int low = byte % 16;
@@ -64,6 +67,30 @@ void genericParameterBuilder::addParam(const std::string& key, const std::string
         }
         return escapedString;
     }
+    std::string genericParameterBuilder::formEncoding(const std::string& string){
+        std::string encoded;
+        const char hex[] = "0123456789ABCDEF";
+
+        for (unsigned char c : string)
+        {
+            if (c == ' ')
+            {
+                encoded.push_back('+');
+            }
+            else if (isSafeForrfc3986(c))
+            {
+                encoded.push_back(c);
+            }
+            else
+            {
+                encoded.push_back('%');
+                encoded.push_back(hex[c >> 4]);
+                encoded.push_back(hex[c & 0x0F]);
+            }
+        }
+        return encoded;
+    }
+
 
     std::string genericParameterBuilder::printParams()
     {
@@ -74,4 +101,19 @@ void genericParameterBuilder::addParam(const std::string& key, const std::string
         }
         paramString.pop_back();
         return paramString;
+    }
+
+    std::string genericParameterBuilder::encode(const std::string& string, const EncodingType& encodingtype){
+        switch (encodingtype)
+        {
+        case EncodingType::RFC3986:
+            return rfc3986encoding(string);
+            break;
+        case EncodingType::Form:
+            return formEncoding(string);
+            break;
+        default:
+            throw std::invalid_argument("Unknown encoding type");
+            break;
+        }
     }

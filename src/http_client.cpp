@@ -10,7 +10,7 @@ httphandler::httphandler(){
 
 
 
-httphandler::HttpResponse httphandler::get(const std::string& url, std::vector<HttpHeader>& headers){
+httphandler::HttpResponse httphandler::get(const std::string& url, const std::vector<HttpHeader>& headers){
     return perform(url, headers, HttpMethod::GET);
 };
 
@@ -43,10 +43,9 @@ httphandler::HttpResponse httphandler::perform(
 {
     CURL *curl;  
     curl = curl_easy_init();
-    
     HttpResponse response;
 
-    if(curl== nullptr ){
+    if(curl== nullptr){
         throw std::runtime_error("Failed to Initalize Curl for Get request");
     }
 

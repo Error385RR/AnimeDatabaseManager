@@ -32,6 +32,7 @@ public:
     void saveToken(const OAuthToken& token);
     OAuthToken refreshToken(const OAuthConfig& config, const std::string& refreshToken);
     OAuthToken getTokenData(OAuth2Client& maloauth, const OAuthConfig& config);
-
+    bool isUsableToken(const OAuthToken& token);
+    bool canUseAccessToken(const OAuthToken& token);
 
 };

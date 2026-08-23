@@ -16,13 +16,20 @@ using json = nlohmann::json;
 
 class OAuth2Client{
 public:
+    struct OAuthFlow{
+        std::string state;    
+        std::string verifier;
+        std::string codeChallenge;
+        std::string codeChallengeMethodString;
+        std::string codeForToken;
+    };
     OAuth2Client(const OAuthConfig& oauthConfig);
 
     static std::string getClientID(const std::string& filepath);
-    std::string pkceVerifierGenerator();
+    // std::string pkceVerifierGenerator();
 
-    std::string pkceCodeChallenge(const std::string& verifier);
-    std::string generateState();
+    // std::string pkceCodeChallenge(const std::string& verifier);
+    static std::string generateState();
 
     std::string generateAuthorizationURL();
 
@@ -35,12 +42,8 @@ public:
 
 private:
     httphandler httpHandler;
-    PKCE pkce;
-    
-    std::string verifier;
-    std::string codeChallenge;
-    std::string codeChallengeMethodString;
-    std::string codeForToken;
+    // PKCE pkce;
+    OAuthFlow flow;
    
     OAuthConfig config;
 };

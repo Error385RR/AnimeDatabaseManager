@@ -7,15 +7,15 @@
 
 #include "mal_api.hpp"
 
-MalClient::MalClient(const Config::configdata& cfg)
-    : jsonFilepath(cfg.MALTOKENFilePath),
-      config(createOAuthConfig(cfg)),
-      maloauth(config),
-      tokenManager(cfg.MALTOKENFilePath)
+MalProvider::MalProvider(const Config::configdata& cfg)
+    // : jsonFilepath(cfg.MALTOKENFilePath),
+        :config(createOAuthConfig(cfg)),
+        maloauth(config),
+        tokenManager(cfg.MALTOKENFilePath)
 
     {}
     
-OAuthConfig MalClient::createOAuthConfig(const Config::configdata& cfg)
+OAuthConfig MalProvider::createOAuthConfig(const Config::configdata& cfg)
 {
     OAuthConfig config;
 
@@ -37,7 +37,7 @@ OAuthConfig MalClient::createOAuthConfig(const Config::configdata& cfg)
     
     return config;
 }
-TokenManager::OAuthToken MalClient::getTokenData(){
+TokenManager::OAuthToken MalProvider::getTokenData(){
         TokenManager::OAuthToken token;
         json jsonTokenData;
         try
@@ -71,7 +71,7 @@ TokenManager::OAuthToken MalClient::getTokenData(){
     }
 
 
-    json MalClient::getAnimebyId(int id)
+    anime::Anime MalProvider::getAnimeById(int id)
     {
             std::string baseURL ="https://api.myanimelist.net/v2/anime/" + std::to_string(id);
             genericParameterBuilder url(baseURL);
@@ -98,7 +98,7 @@ TokenManager::OAuthToken MalClient::getTokenData(){
             return animeJson;
     }
 
-    json MalClient::getUserAnimeList(){
+    json MalProvider::getUserAnimeList(){
         std::string baseURL ="https://api.myanimelist.net/v2/users/@me/animelist?";
         genericParameterBuilder url(baseURL);
         url.addParam("fields", "list_status");
@@ -126,7 +126,7 @@ TokenManager::OAuthToken MalClient::getTokenData(){
     }
 
 
-json MalClient::getMangabyId(int id)
+json MalProvider::getMangabyId(int id)
     {
             std::string baseURL ="https://api.myanimelist.net/v2/manga/" + std::to_string(id);
             genericParameterBuilder url(baseURL);
@@ -154,7 +154,7 @@ json MalClient::getMangabyId(int id)
     }
 
 
-json MalClient::getUserAnimeList(const std::string& username)
+json MalProvider::getUserAnimeList(const std::string& username)
     {
             std::string baseURL ="https://api.myanimelist.net/v2/users/" + username + "/animelist";
             genericParameterBuilder url(baseURL);
@@ -182,7 +182,7 @@ json MalClient::getUserAnimeList(const std::string& username)
             return animeJson;
     }
 
-json MalClient::searchAnime(const std::string& searchquery){
+IAnimeProvider::SearchPage MalProvider::searchAnimeByName(const std::string& searchquery){
     
     std::string baseurl = "https://api.myanimelist.net/v2/anime";
     genericParameterBuilder url(baseurl);
@@ -200,9 +200,72 @@ json MalClient::searchAnime(const std::string& searchquery){
 
     auto response = malhttphandler.get(querystringurl, headers);
 
-    if(response.statusCode == 200){
-        return json::parse(response.body);
-    }else{
-        return NULL;
+    if (response.statusCode != 200)
+    {
+        throw std::runtime_error(
+            "Failed to search anime."
+        );
     }
+
+    return parseSearchResponse(response.body);
+}
+
+IAnimeProvider::SearchPage MalProvider::getSearchPage(const std::string& nextPageURL){
+    auto token = getTokenData();
+    // httphandler::HttpHeader header;
+    // header.name = ;
+    // header.value = ;
+    std::vector<httphandler::HttpHeader> headers{{"Authorization","Bearer " + token.accessToken}};
+    // headers.push_back(header);
+    auto response = malhttphandler.get(nextPageURL, headers);
+    if (response.statusCode != 200)
+    {
+        throw std::runtime_error(
+            "Failed to search anime."
+        );
+    }
+
+    return parseSearchResponse(response.body);
+    }
+
+IAnimeProvider::SearchPage MalProvider::parseSearchResponse(const std::string& body)
+{
+    json data = json::parse(body);
+
+    if (!data.contains("data") ||
+        !data["data"].is_array())
+    {
+        throw std::runtime_error(
+            "Invalid MAL search response."
+        );
+    }
+
+    SearchPage results;
+
+    for (const auto& entry : data["data"])
+    {
+        if (!entry.contains("node"))
+            continue;
+
+        const auto& node = entry["node"];
+
+        if (!node.contains("id") ||
+            !node.contains("title"))
+            continue;
+
+        results.results.push_back({
+            node["id"].get<int>(),
+            node["title"].get<std::string>()
+        });
+    }
+
+    if (data.contains("paging") &&
+        data["paging"].contains("next") &&
+        data["paging"]["next"].is_string())
+    {
+        results.nextPageURL =
+            data["paging"]["next"].get<std::string>();
+    }
+
+    return results;
 }

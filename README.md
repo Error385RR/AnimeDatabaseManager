@@ -43,8 +43,8 @@ cd cli_dbexp
 ### 2. Create Required Directory Structure
 ```powershell
 # Create necessary directories for configuration and data storage
-New-Item -ItemType Directory -Path "clidb\config" -Force
-New-Item -ItemType Directory -Path "clidb\raw\anime" -Force
+mkdir "clidb\config" 
+mkdir "clidb\raw\anime"
 ```
 
 ### 3. Configure Application
@@ -68,8 +68,8 @@ Before running the application, you need to set up authentication with MyAnimeLi
 ```powershell
 mkdir build
 cd build
-cmake .. -G "Visual Studio 16 2019" -A x64
-cmake --build . --config Release
+cmake .. 
+cmake --build .
 ```
 
 ## Usage

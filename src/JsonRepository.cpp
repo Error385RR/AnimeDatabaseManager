@@ -161,12 +161,12 @@ void JsonRepository::createIndex(){
 
 json JsonRepository::loadIndexJson(){
     json indexJson;
-    std::ifstream file(directoryPath.parent_path() / "animeIndex.json");
-    if(!std::filesystem::exists(directoryPath.parent_path() / "animeIndex.json")){
-        file.clear();
+    const auto indexPath = directoryPath.parent_path() / "animeIndex.json";
+    if(!std::filesystem::exists(indexPath)){
         createIndex();
-        file.open(directoryPath.parent_path() / "animeIndex.json");
+
     }
+    std::ifstream file(indexPath);
     if(!file.is_open()) throw std::runtime_error("Could not open anime index at: " + (directoryPath.parent_path() / "animeIndex.json").string());
     try {
         file >> indexJson;
@@ -230,3 +230,6 @@ std::vector<JsonRepository::SearchResult> JsonRepository::searchAnimeByName(cons
     return results;
 }
 
+std::filesystem::path JsonRepository::getRepoPath(){
+    return directoryPath;
+}

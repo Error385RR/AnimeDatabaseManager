@@ -1,26 +1,32 @@
 #pragma once
 
-#include "JsonRepository.hpp"
-#include "mal_api.hpp"
-
+#include "IAnimeRepository.hpp"
+#include "IAnimeProvider.hpp"
 
 class Library{
 private:
     IAnimeRepository& repository;
-    MalClient mal = MalClient(Config::getDefaults());
+    IAnimeProvider& animeProvider;
+    
+    std::filesystem::path repopath;
 public:
-    explicit Library(IAnimeRepository& repository);
+    explicit Library(IAnimeRepository& repository, IAnimeProvider& animeprovider);
+    
+    // Local repository operations
     std::vector<IAnimeRepository::SearchResult> searchAnimelocal(const std::string& name);
     anime::Anime getAnimeById(int id);
-    std::vector<IAnimeRepository::SearchResult> searchAnimeProvider(const std::string& name);
-    
     void savelocal(const anime::Anime& anime);
     void removelocal(int id);
     void refreshrepo();
+    
+    //Provider Operations
     anime::Anime getAnimeByIdProvider(int id);
+    IAnimeProvider::SearchPage searchAnimeProvider(const std::string& name);
+    IAnimeProvider::SearchPage getNextProviderSearchPage(const std::string& nexpageurl); 
 
+    // Import
     std::vector<int> animeids(const std::filesystem::path& xmlfilepath);
-    void importer(const std::filesystem::path& xmlfilepath, const std::filesystem::path& rawfilesdirpath);
+    void importer(const std::filesystem::path& xmlfilepath);
 
 
 };

@@ -12,7 +12,7 @@
 #include "config.hpp"
 #include "JsonRepository.hpp"
 #include "mal_api.hpp"
-#include "Library.hpp"
+
 
 
 
@@ -672,11 +672,7 @@ int main()
     /*
      * Create the concrete implementations.
      */
-    JsonRepository jsonRepo(
-        std::filesystem::path(
-            cfg.jsonrepositorypath
-        )
-    );
+    JsonRepository jsonRepo(std::filesystem::path(cfg.jsonrepositorypath));
 
     MalProvider malProvider(cfg);
 

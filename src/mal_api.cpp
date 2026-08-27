@@ -92,9 +92,18 @@ TokenManager::OAuthToken MalProvider::getTokenData(){
             {
                 throw std::runtime_error("Failed to retrieve anime.");
             }
-
             json animeJson = json::parse(response.body);
+            // if (!animeJson.is_object()) {
+            //     std::cerr << "Unexpected MAL response for anime "
+            //             << id << ":\n"
+            //             << animeJson.dump(2)
+            //             << '\n';
 
+            //     throw std::runtime_error(
+            //         "Expected anime object, got " +
+            //         std::string(animeJson.type_name())
+            //     );
+            // }
             return animeJson;
     }
 

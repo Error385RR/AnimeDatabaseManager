@@ -1,6 +1,8 @@
 #include "Library.hpp"
-#include "pugixml.hpp"
+#include <pugixml.hpp>
 
+#include <chrono>
+#include <thread>
 #include <iostream>
 #include <algorithm>
 #include <cctype>
@@ -59,12 +61,14 @@ Library::Library(IAnimeRepository& repository, IAnimeProvider& animeprovider)
         int count = 0;
 
         for(const auto& i: ids){
+             
             try {
                 std::cout << "Processing anime ID: " << i << '\n';
                 if(repository.animeExists(i)){continue;}
                 repository.save(animeProvider.getAnimeById(i));
                 ++count;
                 std::cout<< count << "- Successfully imported anime ID: " << i << '\n';
+                
             }
             catch (const std::exception& e) {
                 std::cerr
@@ -75,6 +79,7 @@ Library::Library(IAnimeRepository& repository, IAnimeProvider& animeprovider)
                     << '\n'<<std::endl;
                 continue;
             }
+           std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
 
 }

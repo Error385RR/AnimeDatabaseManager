@@ -1,19 +1,12 @@
 #pragma once
 
-#include <iostream>
-#include <fstream>
-#include <string>
 #include <filesystem>
-#include <stdexcept>
+#include <string>
 
 #include "json.hpp"
 
-using json = nlohmann::json;
-
-class Config{
-private:
-    std::filesystem::path configPath;
-
+class Config
+{
 public:
 
     struct configdata
@@ -24,14 +17,21 @@ public:
         std::filesystem::path jsonrepositorypath;
     };
 
-    Config(const std::filesystem::path& configFilePath);
-    configdata defaults = getDefaults();
+    Config();
 
-    static configdata getDefaults();
-    bool createConfig(const configdata& defaults);
+    explicit Config(
+          const std::filesystem::path& configFilePath
+      );
+
+    configdata getDefaults() const;
+
+    bool createConfig(
+          const configdata& defaults
+      ) const;
 
     configdata loadConfig();
+
+private:
+
+    std::filesystem::path configPath;
 };
-
-
-

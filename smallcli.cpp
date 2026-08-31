@@ -664,7 +664,7 @@ void importFromXML(Library& app)
 
 int main()
 {
-    Config configManager("config/config.json");
+    Config configManager;
 
     Config::configdata cfg =
         configManager.loadConfig();

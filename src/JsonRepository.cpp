@@ -42,7 +42,7 @@ JsonRepository::JsonRepository(const std::filesystem::path& rawfilespath){
     if(std::filesystem::exists(rawfilespath) && std::filesystem::is_directory(rawfilespath)){
         directoryPath = rawfilespath;
     }else{
-        throw std::runtime_error("Repository Directory does not exist");
+        throw std::runtime_error("Repository Directory does not exist" + rawfilespath.string());
     }
 }
 bool JsonRepository::animeExists(int id){
